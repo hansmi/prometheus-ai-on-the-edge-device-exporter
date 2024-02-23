@@ -7,7 +7,7 @@ require (
 	github.com/go-kit/log v0.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/prometheus/client_golang v1.18.0
-	github.com/prometheus/common v0.46.1-0.20240206181200-773d5664eb8d
+	github.com/prometheus/common v0.48.0
 	github.com/prometheus/exporter-toolkit v0.11.0
 	golang.org/x/sync v0.6.0
 )
