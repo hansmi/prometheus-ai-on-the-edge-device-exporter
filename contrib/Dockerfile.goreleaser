@@ -1,0 +1,15 @@
+FROM docker.io/library/alpine:latest
+
+RUN apk add --no-cache tzdata
+
+LABEL org.opencontainers.image.licenses=BSD-3-Clause
+LABEL org.opencontainers.image.description="Prometheus metrics for AI-on-the-edge devices"
+
+WORKDIR /
+
+COPY LICENSE README.md /
+COPY prometheus-ai-on-the-edge-device-exporter /
+
+ENTRYPOINT ["/prometheus-ai-on-the-edge-device-exporter"]
+
+# vim: set ft=dockerfile :
