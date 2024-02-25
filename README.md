@@ -4,9 +4,10 @@
 [![CI workflow](https://github.com/hansmi/prometheus-ai-on-the-edge-device-exporter/actions/workflows/ci.yaml/badge.svg)](https://github.com/hansmi/prometheus-ai-on-the-edge-device-exporter/actions/workflows/ci.yaml)
 [![Go reference](https://pkg.go.dev/badge/github.com/hansmi/prometheus-ai-on-the-edge-device-exporter.svg)](https://pkg.go.dev/github.com/hansmi/prometheus-ai-on-the-edge-device-exporter)
 
-A Prometheus metrics exporter for [AI-on-the-edge devices][aiontheedge], an
-artificial intelligence-based system to digitize analog measurements by meters
-(water, gas, power, etc.) running on ESP32 microcontrollers.
+A [Prometheus metrics][prometheus] exporter for [AI-on-the-edge
+devices][aiontheedge], an artificial intelligence-based system to digitize
+analog measurements by meters (water, gas, power, etc.) running on ESP32
+microcontrollers.
 
 
 ## Usage
@@ -15,8 +16,21 @@ artificial intelligence-based system to digitize analog measurements by meters
 docker run --rm -p 8081:8081 ghcr.io/hansmi/prometheus-ai-on-the-edge-device-exporter:latest
 ```
 
+The exporter expects probe requests on the `/probe` endpoint. A single URL
+query parameter named `target` specifies the target URL.
+
+```shell
+$ curl http://localhost:8081/probe?target=http://water
+…
+ai_on_the_edge_device_cpu_temperature_celsius 46
+ai_on_the_edge_device_flow_value{name="main"} 12.345
+…
+```
+
 
 ## Scrape config
+
+Example configuration for Prometheus:
 
 ```yaml
 scrape_configs:
@@ -64,6 +78,7 @@ directly using [Go][golang] or [GoReleaser][goreleaser].
 [aiontheedge]: https://github.com/jomjol/AI-on-the-edge-device
 [golang]: https://golang.org/
 [goreleaser]: https://goreleaser.com/
+[prometheus]: https://prometheus.io/
 [releases]: https://github.com/hansmi/prometheus-ai-on-the-edge-device-exporter/releases/latest
 
 <!-- vim: set sw=2 sts=2 et : -->
