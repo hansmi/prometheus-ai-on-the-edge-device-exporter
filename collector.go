@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -96,10 +97,26 @@ var client = func() *http.Client {
 }()
 
 func collectJsonNumber(ch chan<- prometheus.Metric, name string,
-	desc *prometheus.Desc, valueType prometheus.ValueType, raw json.Number,
+	desc *prometheus.Desc, valueType prometheus.ValueType, raw json.RawMessage,
 	labelValues ...string,
 ) error {
-	value, err := raw.Float64()
+	if len(raw) == 0 {
+		// Message is unset
+		return nil
+	}
+
+	var s string
+
+	if err := json.Unmarshal(raw, &s); err != nil {
+		return fmt.Errorf("%s: %w", name, err)
+	}
+
+	if s == "" {
+		// Number is missing
+		return nil
+	}
+
+	value, err := strconv.ParseFloat(s, 64)
 	if err != nil {
 		return fmt.Errorf("%s: %w", name, err)
 	}
@@ -170,13 +187,13 @@ func (c *collector) doJsonRequest(ctx context.Context, path string, v any) error
 }
 
 type sysinfoData struct {
-	Firmware    string      `json:"firmware"`
-	GitTag      string      `json:"gittag"`
-	GitRevision string      `json:"gitrevision"`
-	CpuTemp     json.Number `json:"cputemp"`
-	Hostname    string      `json:"hostname"`
-	IPv4        string      `json:"ipv4"`
-	FreeHeapMem json.Number `json:"freeHeapMem"`
+	Firmware    string          `json:"firmware"`
+	GitTag      string          `json:"gittag"`
+	GitRevision string          `json:"gitrevision"`
+	CpuTemp     json.RawMessage `json:"cputemp"`
+	Hostname    string          `json:"hostname"`
+	IPv4        string          `json:"ipv4"`
+	FreeHeapMem json.RawMessage `json:"freeHeapMem"`
 }
 
 func (c *collector) collectSysinfo(ctx context.Context, ch chan<- prometheus.Metric) error {
@@ -230,16 +247,14 @@ func (c *collector) collectRssi(ctx context.Context, ch chan<- prometheus.Metric
 }
 
 type flowData struct {
-	Value     json.Number `json:"value"`
-	Error     string      `json:"error"`
-	Timestamp string      `json:"timestamp"`
+	Value     json.RawMessage `json:"value"`
+	Error     string          `json:"error"`
+	Timestamp string          `json:"timestamp"`
 }
 
 func (d flowData) collect(ch chan<- prometheus.Metric, name string) error {
-	if d.Value != "" {
-		if err := collectJsonNumber(ch, "value", descriptors.flowValue, prometheus.CounterValue, d.Value, name); err != nil {
-			return err
-		}
+	if err := collectJsonNumber(ch, "value", descriptors.flowValue, prometheus.CounterValue, d.Value, name); err != nil {
+		return err
 	}
 
 	var successValue float64

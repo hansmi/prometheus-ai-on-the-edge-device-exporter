@@ -36,6 +36,14 @@ func TestCollector(t *testing.T) {
     "value": "9.876",
     "error": "no error",
     "timestamp": "2000-01-02T10:11:12+1300"
+  },
+  "second": {
+    "value": "",
+    "raw": "00013.501",
+    "pre": "13.564",
+    "error": "Neg. Rate - Read:  - Raw: 00013.501 - Pre: 13.564 ",
+    "rate": "",
+    "timestamp": "2000-01-02T20:21:22+0100"
   }
 }
 `)
@@ -76,14 +84,17 @@ ai_on_the_edge_device_firmware_info{gitrevision="3fbff0a",gittag="v15.3.0",versi
 # HELP ai_on_the_edge_device_flow_error_info Error encountered during digitization.
 # TYPE ai_on_the_edge_device_flow_error_info gauge
 ai_on_the_edge_device_flow_error_info{message="",name="main"} 1
+ai_on_the_edge_device_flow_error_info{message="Neg. Rate - Read:  - Raw: 00013.501 - Pre: 13.564",name="second"} 1
 
 # HELP ai_on_the_edge_device_flow_success Whether digitization was successful.
 # TYPE ai_on_the_edge_device_flow_success gauge
 ai_on_the_edge_device_flow_success{name="main"} 1
+ai_on_the_edge_device_flow_success{name="second"} 0
 
 # HELP ai_on_the_edge_device_flow_timestamp_seconds Timestamp of the most recent digitization.
 # TYPE ai_on_the_edge_device_flow_timestamp_seconds gauge
 ai_on_the_edge_device_flow_timestamp_seconds{name="main"} 946761072
+ai_on_the_edge_device_flow_timestamp_seconds{name="second"} 946840882
 
 # HELP ai_on_the_edge_device_flow_value Most recent value.
 # TYPE ai_on_the_edge_device_flow_value counter
@@ -216,6 +227,23 @@ func TestCollectFlows(t *testing.T) {
 				io.WriteString(w, `{ "foo": { "timestamp": "hello" } }`)
 			},
 			wantErr: cmpopts.AnyError,
+		},
+		{
+			name: "negative rate",
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				io.WriteString(w, `
+{
+  "main": {
+    "value": "",
+    "raw": "00013.501",
+    "pre": "13.564",
+    "error": "Neg. Rate - Read:  - Raw: 00013.501 - Pre: 13.564 ",
+    "rate": "",
+    "timestamp": "2000-01-02T20:21:22+0100"
+  }
+}
+`)
+			},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
