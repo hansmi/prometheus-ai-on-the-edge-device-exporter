@@ -8,7 +8,7 @@ require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/google/go-cmp v0.7.0
 	github.com/prometheus/client_golang v1.22.0
-	github.com/prometheus/common v0.64.0
+	github.com/prometheus/common v0.65.0
 	github.com/prometheus/exporter-toolkit v0.14.0
 	golang.org/x/sync v0.15.0
 )
